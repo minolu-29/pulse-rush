@@ -1,0 +1,50 @@
+# main に変更が入るたびに、全配信先の版を作り直して公開する
+#  - 自分のサイト版 → GitHub Pages に公開
+#  - CrazyGames版・GameDistribution版のZIPとカバー画像 → Releases の「latest」に置く（ここからダウンロードしてアップロード）
+name: 公開
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: 全配信先の版を作る
+        run: node tools/build.mjs
+      - name: 配信用ファイルを Releases に置く
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete latest --yes --cleanup-tag || true
+          gh release create latest dist/*.zip store/* \
+            --title "配信用ファイル（最新）" \
+            --notes "main の最新版から自動で作ったファイルです。CrazyGames・GameDistribution には、それぞれの zip とカバー画像をアップロードしてください。（$(git rev-parse --short HEAD)）"
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/web
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

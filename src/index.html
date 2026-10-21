@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>Pulse Rush | 42曲の無料リズムゲーム</title>
+<!--WEB-HEAD-->
+<meta name="description" content="ブラウザで遊べる無料の音ゲー。12ジャンル42曲のオリジナル曲を、簡単・普通・難しい・鬼の4段階で。スマホはタップ、PCはD F J Kキー。">
+<meta name="theme-color" content="#07051a">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Pulse Rush | 42曲の無料リズムゲーム">
+<meta property="og:description" content="42 original tracks, 4 difficulties. Free rhythm game in your browser.">
+<meta property="og:image" content="%SITE_URL%og.png">
+<meta property="og:url" content="%SITE_URL%">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="manifest" href="manifest.webmanifest">
+<!--/WEB-HEAD-->
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;800&family=Unbounded:wght@600;800&display=swap">
+<style>
+:root{
+  --bg:#07051a; --panel:rgba(18,12,44,.78); --panel2:rgba(255,255,255,.06); --line:rgba(255,255,255,.12);
+  --ink:#f4f1ff; --muted:#a9a3c9; --pink:#ff4fd8; --cyan:#4fe6ff; --g1:#ff4fd8; --g2:#4fe6ff;
+  --fd:Unbounded,"M PLUS Rounded 1c",sans-serif; --fb:"M PLUS Rounded 1c","Hiragino Sans","Yu Gothic",sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font-family:var(--fb);overscroll-behavior:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;padding:0}
+button:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+#cv{position:fixed;inset:0;display:block}
+.screen{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;padding:calc(12px + env(safe-area-inset-top)) 12px calc(12px + env(safe-area-inset-bottom))}
+.screen:not(#s-play){animation:in .35s ease-out}
+@keyframes in{from{opacity:0;transform:translateY(8px)}}
+
+/* タイトル */
+#s-title{justify-content:center;gap:18px;text-align:center;cursor:pointer}
+.logo{font-family:var(--fd);font-weight:800;font-size:clamp(46px,14vw,104px);line-height:.95;letter-spacing:-.02em;margin:0;
+  background:linear-gradient(100deg,#fff 0%,var(--pink) 35%,#ffb0f0 50%,var(--cyan) 75%,#fff 100%);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 0 18px rgba(255,79,216,.55)) drop-shadow(0 0 40px rgba(79,230,255,.35));animation:shine 4s linear infinite}
+.logo span{display:block}
+@keyframes shine{to{background-position:-200% 0}}
+.tagline{font-weight:800;font-size:clamp(14px,3.8vw,18px);color:var(--ink);opacity:.9;max-width:28em}
+.tagline b{color:var(--cyan)}
+.start{margin-top:24px;font-family:var(--fd);font-weight:800;font-size:clamp(16px,4.6vw,22px);letter-spacing:.12em;padding:16px 34px;border-radius:999px;
+  background:linear-gradient(90deg,var(--pink),#9b5cff,var(--cyan));box-shadow:0 0 30px rgba(255,79,216,.5),inset 0 0 0 2px rgba(255,255,255,.4);animation:breathe 1.6s ease-in-out infinite}
+@keyframes breathe{50%{transform:scale(1.06);box-shadow:0 0 50px rgba(79,230,255,.6),inset 0 0 0 2px rgba(255,255,255,.6)}}
+.genres{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;max-width:460px;margin-top:6px}
+.genres span{font-size:11px;font-weight:800;padding:3px 10px;border-radius:999px;background:var(--panel2);border:1px solid var(--line);color:var(--muted)}
+.foot{position:absolute;bottom:calc(10px + env(safe-area-inset-bottom));font-size:11px;color:var(--muted);opacity:.8}
+.foot a{color:var(--muted)}
+
+/* 曲選択 */
+#s-select{gap:10px}
+.top{width:100%;max-width:620px;display:flex;align-items:center;gap:10px}
+.top h2{font-family:var(--fd);font-size:18px;margin:0;flex:1;background:linear-gradient(90deg,var(--pink),var(--cyan));-webkit-background-clip:text;background-clip:text;color:transparent}
+.ib{width:40px;height:40px;border-radius:12px;background:var(--panel);border:1px solid var(--line);display:grid;place-items:center;font-size:18px;backdrop-filter:blur(8px)}
+.ib svg{width:20px;height:20px}
+#chips{width:100%;max-width:620px;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px;flex:none}
+#chips::-webkit-scrollbar{display:none}
+.chip{flex:none;font-size:12px;font-weight:800;padding:6px 12px;border-radius:999px;background:var(--panel);border:1px solid var(--line);color:var(--muted);backdrop-filter:blur(8px)}
+.chip small{opacity:.7}
+.chip.on{color:#0b0820;background:linear-gradient(90deg,var(--g1),var(--g2));border-color:transparent}
+#songs{width:100%;max-width:620px;flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:6px;padding:2px 2px 8px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.2) transparent;
+  mask-image:linear-gradient(#000 92%,transparent);-webkit-mask-image:linear-gradient(#000 92%,transparent)}
+.song{display:flex;align-items:center;gap:12px;text-align:left;padding:7px 12px 7px 7px;border-radius:14px;background:var(--panel);border:1px solid var(--line);backdrop-filter:blur(8px);transition:transform .12s,border-color .12s,background .12s}
+.song img{width:56px;height:56px;border-radius:10px;flex:none}
+.song .meta{flex:1;min-width:0;display:flex;flex-direction:column}
+.song b{font-weight:800;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.song small{font-size:11px;color:var(--muted);font-weight:800}
+.song em{font-style:normal;color:#fff27a}
+.song .lv{display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-family:var(--fd);font-size:12px;color:var(--dc)}
+.song .rk{font-style:normal;font-size:14px}
+.song.sel{border-color:var(--c1);background:linear-gradient(90deg,color-mix(in srgb,var(--c1) 28%,transparent),var(--panel) 70%);transform:translateX(4px);box-shadow:0 0 22px color-mix(in srgb,var(--c1) 35%,transparent)}
+.song:active{transform:scale(.98)}
+.detail{width:100%;max-width:620px;flex:none;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:12px;display:flex;flex-direction:column;gap:10px;backdrop-filter:blur(14px);
+  box-shadow:0 -10px 40px rgba(0,0,0,.4),0 0 0 1px color-mix(in srgb,var(--g1) 30%,transparent)}
+.d-head{display:flex;gap:12px;align-items:center}
+#d-jacket{width:64px;height:64px;border-radius:12px;box-shadow:0 0 20px color-mix(in srgb,var(--g1) 50%,transparent)}
+.d-head div{flex:1;min-width:0}
+#d-title{font-family:var(--fd);font-weight:800;font-size:clamp(16px,4.6vw,21px);margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#d-sub{font-size:12px;color:var(--muted);font-weight:800}
+#d-best{font-size:12px;color:var(--ink);font-weight:800;opacity:.85}
+#d-best b{font-family:var(--fd);color:#fff27a}
+#diffs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.diff{display:flex;flex-direction:column;align-items:center;padding:6px 2px 5px;border-radius:12px;border:1.5px solid color-mix(in srgb,var(--dc) 40%,transparent);background:color-mix(in srgb,var(--dc) 8%,transparent);color:var(--dc);transition:all .12s}
+.diff span{font-size:12px;font-weight:800}
+.diff b{font-family:var(--fd);font-size:20px;line-height:1.15}
+.diff i{font-style:normal;font-family:var(--fd);font-size:10px;opacity:.9;min-height:13px}
+.diff.on{background:var(--dc);color:#0b0820;box-shadow:0 0 18px color-mix(in srgb,var(--dc) 60%,transparent);transform:translateY(-2px)}
+.diff.on i{color:#0b0820!important}
+.row{display:flex;gap:8px}
+.play{flex:1;font-family:var(--fd);font-weight:800;font-size:20px;letter-spacing:.1em;padding:14px;border-radius:14px;background:linear-gradient(90deg,var(--g1),var(--g2));color:#0b0820;box-shadow:0 0 24px color-mix(in srgb,var(--g1) 50%,transparent)}
+.play:active{transform:scale(.97)}
+#random{width:56px;border-radius:14px;background:var(--panel2);border:1px solid var(--line);font-size:22px}
+
+/* プレイ */
+#s-play{padding:0}
+#touch{position:absolute;inset:0;touch-action:none}
+#pause{position:absolute;top:calc(12px + env(safe-area-inset-top));left:12px;z-index:2}
+.modal{position:fixed;inset:0;z-index:10;display:grid;place-items:center;background:rgba(5,3,15,.7);backdrop-filter:blur(6px);padding:16px}
+.box{width:100%;max-width:380px;background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:20px;display:flex;flex-direction:column;gap:10px;animation:in .2s ease-out}
+.box h3{font-family:var(--fd);margin:0 0 4px;text-align:center;font-size:20px}
+.btn{padding:13px;border-radius:14px;font-weight:800;font-size:16px;background:var(--panel2);border:1px solid var(--line)}
+.btn.main{background:linear-gradient(90deg,var(--g1),var(--g2));color:#0b0820;border:0}
+#count{position:fixed;inset:0;z-index:11;display:grid;place-items:center;font-family:var(--fd);font-size:120px;font-weight:800;color:#fff;text-shadow:0 0 40px var(--g1);pointer-events:none}
+
+/* 設定 */
+.set{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px solid var(--line)}
+.set label,.set>span{font-weight:800;font-size:14px}
+.set small{display:block;color:var(--muted);font-size:11px;font-weight:500}
+.step{display:flex;align-items:center;gap:6px}
+.step button{width:36px;height:36px;border-radius:10px;background:var(--panel2);border:1px solid var(--line);font-size:20px;font-weight:800}
+.step output{min-width:64px;text-align:center;font-family:var(--fd);font-size:14px}
+input[type=range]{width:140px;accent-color:var(--pink)}
+.tg{min-width:64px;padding:8px;border-radius:10px;font-family:var(--fd);font-size:13px;background:var(--panel2);border:1px solid var(--line)}
+.tg[aria-pressed=true]{background:var(--pink);color:#0b0820}
+.keys{font-size:12px;color:var(--muted);text-align:center}
+.keys kbd{font-family:var(--fd);background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:1px 6px;color:var(--ink)}
+
+/* 結果 */
+#s-result{justify-content:center;overflow-y:auto}
+.res{width:100%;max-width:440px;background:var(--panel);border:1px solid var(--line);border-radius:24px;padding:18px;display:flex;flex-direction:column;gap:12px;backdrop-filter:blur(14px);text-align:center;
+  box-shadow:0 0 50px color-mix(in srgb,var(--g1) 25%,transparent)}
+.r-head{display:flex;gap:12px;align-items:center;text-align:left}
+#r-jacket{width:56px;height:56px;border-radius:10px}
+#r-title{font-family:var(--fd);font-size:17px;font-weight:800;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#r-diff{font-weight:800;font-size:13px;color:var(--dc)}
+.r-mid{display:flex;flex-direction:column;align-items:center;gap:4px}
+#r-rank{font-family:var(--fd);font-weight:800;font-size:clamp(64px,20vw,96px);line-height:1;color:var(--rc);text-shadow:0 0 30px var(--rc)}
+#r-rank.pop{animation:stamp .6s cubic-bezier(.2,1.6,.4,1)}
+@keyframes stamp{from{transform:scale(2.6) rotate(-12deg);opacity:0}}
+.r-sc{display:flex;flex-direction:column;align-items:center;gap:4px}
+#r-score{font-family:var(--fd);font-weight:800;font-size:clamp(26px,8vw,36px);font-variant-numeric:tabular-nums}
+.badge{font-family:var(--fd);font-size:14px;font-weight:800;padding:3px 12px;border-radius:999px;background:var(--panel2);border:1px solid var(--line)}
+.badge.fc{background:linear-gradient(90deg,#ffb03d,#fff27a);color:#0b0820}
+.badge.ap{background:linear-gradient(90deg,var(--pink),#fff27a,var(--cyan));color:#0b0820}
+.badge.fail{color:#ff5a7a}
+#r-new{font-family:var(--fd);font-size:12px;color:#fff27a;animation:breathe 1.2s infinite}
+#r-counts{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+#r-counts div{background:var(--panel2);border-radius:12px;padding:6px 4px;display:flex;flex-direction:column}
+#r-counts span{font-family:var(--fd);font-size:9px;color:var(--jc);letter-spacing:.04em}
+#r-counts b{font-family:var(--fd);font-size:18px}
+.r-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+#r-share{grid-column:1/-1;background:#000;border:1px solid var(--line)}
+@media (min-width:900px) and (min-height:600px){ .song b{font-size:16px} }
+@media (prefers-reduced-motion:reduce){ .logo,.start,#r-new{animation:none} }
+</style>
+</head>
+<body data-screen="title">
+<canvas id="cv"></canvas>
+
+<section class="screen" id="s-title" onclick="document.getElementById('start').click()">
+  <h1 class="logo"><span>PULSE</span><span>RUSH</span></h1>
+  <p class="tagline" data-en="<b id=&quot;songcount&quot;>42</b> original tracks · 12 genres · 4 difficulties"><b id="songcount">42</b>曲のオリジナル曲 · 12ジャンル · 4つの難易度</p>
+  <div class="genres"><span>EDM</span><span>Future Bass</span><span>Hyperpop</span><span>Drum &amp; Bass</span><span>Synthwave</span><span>Lo-fi</span><span>Chiptune</span><span>House</span><span>Trap</span><span>J-Core</span><span>Kawaii Bass</span><span>Dubstep</span></div>
+  <button class="start" id="start" type="button" onclick="event.stopPropagation()" data-en="TAP TO START">TAP TO START</button>
+  <p class="foot"><!--PRIVACY-LINK--></p>
+</section>
+
+<section class="screen" id="s-select" hidden>
+  <div class="top">
+    <h2>PULSE RUSH</h2>
+    <button class="ib" type="button" data-open-settings aria-label="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+  </div>
+  <div id="chips"></div>
+  <div id="songs"></div>
+  <div class="detail">
+    <div class="d-head">
+      <img id="d-jacket" alt="" width="64" height="64">
+      <div><h3 id="d-title"></h3><p id="d-sub"></p><p id="d-best"></p></div>
+    </div>
+    <div id="diffs"></div>
+    <div class="row"><button class="play" id="play" type="button">PLAY</button><button id="random" type="button" aria-label="Random">🎲</button></div>
+  </div>
+</section>
+
+<section class="screen" id="s-play" hidden>
+  <div id="touch"></div>
+  <button class="ib" id="pause" type="button" aria-label="Pause"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg></button>
+</section>
+
+<section class="screen" id="s-result" hidden>
+  <div class="res">
+    <div class="r-head"><img id="r-jacket" alt="" width="56" height="56"><div style="min-width:0"><h3 id="r-title"></h3><span id="r-diff"></span></div></div>
+    <div class="r-mid"><div id="r-rank">S</div><div class="r-sc"><span id="r-new" data-en="NEW RECORD!">NEW RECORD!</span><div id="r-score">0</div><span class="badge" id="r-badge"></span></div></div>
+    <div id="r-counts"></div>
+    <div class="r-btns">
+      <button class="btn" id="r-back" type="button" data-en="Song list">曲選択へ</button>
+      <button class="btn main" id="r-retry" type="button" data-en="Retry">もう一回</button>
+      <button class="btn" id="r-share" type="button" data-en="Share result">結果をシェア</button>
+    </div>
+  </div>
+</section>
+
+<div class="modal" id="m-pause" hidden>
+  <div class="box">
+    <h3>PAUSE</h3>
+    <button class="btn main" type="button" data-act="resume" data-en="Resume">つづける</button>
+    <button class="btn" type="button" data-act="retry" data-en="Restart">最初から</button>
+    <button class="btn" type="button" data-act="quit" data-en="Quit to song list">曲選択へ</button>
+  </div>
+</div>
+<div id="count" hidden>3</div>
+
+<div class="modal" id="m-settings" hidden>
+  <div class="box">
+    <h3 data-en="Settings">設定</h3>
+    <div class="set"><span data-en="Note speed<small>Higher = faster notes</small>">ノーツの速さ<small>大きいほど速く流れる</small></span><div class="step"><button type="button" data-act="speed-">−</button><output id="v-speed"></output><button type="button" data-act="speed+">+</button></div></div>
+    <div class="set"><span data-en="Timing offset<small>+ if you tap late</small>">タイミング調整<small>遅れてタップしがちなら＋</small></span><div class="step"><button type="button" data-act="offset-">−</button><output id="v-offset"></output><button type="button" data-act="offset+">+</button></div></div>
+    <div class="set"><label for="r-music" data-en="Music">音楽の音量</label><input type="range" id="r-music" min="0" max="1" step="0.05"></div>
+    <div class="set"><label for="r-se" data-en="Effects">効果音の音量</label><input type="range" id="r-se" min="0" max="1" step="0.05"></div>
+    <div class="set"><span data-en="Hit sound">タップ音</span><button class="tg" type="button" id="t-hit" data-act="hit"></button></div>
+    <div class="set"><span>Language / 言語</span><button class="tg" type="button" id="t-lang" data-act="lang"></button></div>
+    <p class="keys" data-en="Keys: <kbd>D</kbd> <kbd>F</kbd> <kbd>J</kbd> <kbd>K</kbd> or arrows · Pause: <kbd>Esc</kbd>">キー: <kbd>D</kbd> <kbd>F</kbd> <kbd>J</kbd> <kbd>K</kbd> または矢印 · 一時停止: <kbd>Esc</kbd></p>
+    <button class="btn main" type="button" data-act="close" data-en="Done">とじる</button>
+  </div>
+</div>
+
+<!--PLATFORM-->
+<script src="music.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
