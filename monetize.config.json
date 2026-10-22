@@ -1,0 +1,16 @@
+{
+  "name": "pulse-rush",
+  "title": "Pulse Rush",
+  "siteUrl": "https://minolu-29.github.io/pulse-rush/",
+  "customDomain": "",
+  "contact": "",
+  "web": {
+    "adsenseClient": "",
+    "adTest": true,
+    "adFrequency": "120s",
+    "ga4": ""
+  },
+  "gamedistribution": {
+    "gameId": ""
+  }
+}
